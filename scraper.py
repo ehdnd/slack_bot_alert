@@ -1,5 +1,4 @@
 import requests
-import time
 import random
 from bs4 import BeautifulSoup
 from slack_sdk import WebClient
@@ -11,7 +10,7 @@ def check_button_class(url):
         response = requests.get(
             url,
             headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Whale/3.24.223.18 Safari/537.36"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Whale/3.24.223.18 Safari/537.36"
             })
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, "html.parser")
@@ -42,7 +41,7 @@ def validate_url(url):
         print(f"URL validation error occurred: {e}")
         return False
 
-def monitor_changes(url, interval):
+def monitor_changes(url):
     if not validate_url(url):
         print("Invalid URL provided. Exiting...")
         return
@@ -50,34 +49,48 @@ def monitor_changes(url, interval):
     slack_token = os.getenv("SLACK_TOKEN")  # 환경 변수에서 Slack 토큰 불러오기
     client = WebClient(token=slack_token)
     channel_id = os.getenv("CHANNEL_ID")  # 환경 변수에서 채널 ID 불러오기
-    send_slack_message(client, channel_id, "=====================")    
-    send_slack_message(client, channel_id, "Monitoring started...")
-
-    last_class = None
     
-    try:
-        while True:
-            current_class = check_button_class(url)
-            
-            if current_class is None:
-                send_slack_message(client, channel_id, "Button not found or HTTP error.")
-            elif last_class is None:
-                send_slack_message(client, channel_id, f"Initial class state: {current_class}")
-            elif last_class != current_class:
-                send_slack_message(client, channel_id, f"Class change detected: {last_class} -> {current_class}")
-                send_slack_message(client, channel_id, url)
-            
-            last_class = current_class
-            sleep_time = random.randint(interval - 450, interval + 450)
-            time.sleep(sleep_time)
 
-    except KeyboardInterrupt:
-        print("Monitoring stopped.")
-        send_slack_message(client, channel_id, "Monitoring has been stopped by the user.")
-    except Exception as e:
-        print(f"Unexpected error occurred: {e}")
-        send_slack_message(client, channel_id, "An unexpected error occurred during monitoring.")
+    last_class_file = "last_class.txt"
+
+    # def get_last_class():
+    #     if os.path.exists(last_class_file):
+    #         with open(last_class_file, "r") as file:
+    #             return file.read().strip()
+    #     return None
+    def get_last_class():
+        try:
+            with open('last_class.txt', 'r') as file:
+                # 파일에서 읽은 문자열을 리스트로 변환
+                last_class = file.read().split(',')
+                return last_class
+        except FileNotFoundError:
+            return []
+
+    # def set_last_class(class_name):
+    #     with open('last_class.txt', 'w') as file:
+    #         # 리스트를 문자열로 변환
+    #         class_name_str = ','.join(class_name)
+    #         file.write(class_name_str)
+    def set_last_class(current_class):
+        with open('last_class.txt', 'w') as file:
+            # 리스트를 문자열로 변환하여 파일에 쓰기
+            class_name_str = ','.join(current_class)
+            file.write(class_name_str)
+
+    last_class = get_last_class()
+    current_class = check_button_class(url)
+
+    if current_class is None:
+        send_slack_message(client, channel_id, "Button not found or HTTP error.")
+    elif last_class is None:
+        send_slack_message(client, channel_id, f"Initial class state: {current_class}")
+    elif last_class != current_class:
+        send_slack_message(client, channel_id, f"Class change detected: {last_class} -> {current_class}")
+        send_slack_message(client, channel_id, url)
+
+    set_last_class(current_class)
 
 url = "https://linefriendssquare.com/products/bunini-mini-costume-keyring-gray?variant=44274476024007"
 print("Monitoring started...")
-monitor_changes(url, 3600)
+monitor_changes(url)
