@@ -3,7 +3,7 @@ name: Scraper
 on:
   schedule:
     - cron: "0 * * * *"  # 매 시간 0분에 실행 (UTC 기준)
-  workflow_dispatch:  # 수동 실행을 위한 트리거 추가
+  workflow_dispatch:
 
 jobs:
   scrape-job:
@@ -23,16 +23,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests beautifulsoup4 slack_sdk
 
+    - name: Send Slack notification before running the scraper
+      env:
+        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      run: |
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"수동으로 모니터링이 시작되었습니다."}' https://slack.com/api/chat.postMessage?token=${SLACK_TOKEN}&channel=${CHANNEL_ID}
+
     - name: Run scraper
       env:
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
       run: python scraper.py
-
-    - name: Send Slack notification
-      if: ${{ github.event_name == 'workflow_dispatch' }}  # workflow_dispatch 이벤트일 때만 실행
-      env:
-        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-      run: |
-        curl -X POST -H 'Content-type: application/json' --data '{"text":"워크플로우가 처음 실행되었습니다."}' https://slack.com/api/chat.postMessage?token=${{ secrets.SLACK_TOKEN }}&channel=${{ secrets.CHANNEL_ID }}
