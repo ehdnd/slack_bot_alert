@@ -28,3 +28,11 @@ jobs:
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
       run: python scraper.py
+
+    - name: Send Slack notification
+      if: ${{ github.event_name == 'workflow_dispatch' }}  # workflow_dispatch 이벤트일 때만 실행
+      env:
+        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      run: |
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"워크플로우가 처음 실행되었습니다."}' https://slack.com/api/chat.postMessage?token=${{ secrets.SLACK_TOKEN }}&channel=${{ secrets.CHANNEL_ID }}
