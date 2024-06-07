@@ -1,5 +1,6 @@
 import requests
 import random
+import time
 from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -53,11 +54,6 @@ def monitor_changes(url):
 
     last_class_file = "last_class.txt"
 
-    # def get_last_class():
-    #     if os.path.exists(last_class_file):
-    #         with open(last_class_file, "r") as file:
-    #             return file.read().strip()
-    #     return None
     def get_last_class():
         try:
             with open('last_class.txt', 'r') as file:
@@ -67,11 +63,6 @@ def monitor_changes(url):
         except FileNotFoundError:
             return []
 
-    # def set_last_class(class_name):
-    #     with open('last_class.txt', 'w') as file:
-    #         # 리스트를 문자열로 변환
-    #         class_name_str = ','.join(class_name)
-    #         file.write(class_name_str)
     def set_last_class(current_class):
         with open('last_class.txt', 'w') as file:
             # 리스트를 문자열로 변환하여 파일에 쓰기
@@ -92,5 +83,7 @@ def monitor_changes(url):
     set_last_class(current_class)
 
 url = "https://linefriendssquare.com/products/bunini-mini-costume-keyring-gray?variant=44274476024007"
-print("Monitoring started...")
+
+wait_time = random.randint(0, 900)
+time.sleep(wait_time)
 monitor_changes(url)
