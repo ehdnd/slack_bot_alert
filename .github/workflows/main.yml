@@ -28,7 +28,10 @@ jobs:
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
       run: |
-        curl -X POST -H 'Content-type: application/json' --data '{"text":"수동으로 모니터링이 시작되었습니다."}' https://slack.com/api/chat.postMessage?token=${SLACK_TOKEN}&channel=${CHANNEL_ID}
+        curl -X POST -H 'Authorization: Bearer ${{ secrets.SLACK_TOKEN }}' -H 'Content-type: application/json' \
+        --data '{"channel":"${{ secrets.CHANNEL_ID }}", "text":"Scraper가 실행되기 전에 알림을 보냅니다."}' \
+        https://slack.com/api/chat.postMessage
+
 
     - name: Run scraper
       env:
