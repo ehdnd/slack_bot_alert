@@ -61,7 +61,7 @@ def monitor_changes(url):
                 last_class = file.read().split(',')
                 return last_class
         except FileNotFoundError:
-            return [ipx_add_to_cart,product-form__submit,buyBtn,button,hidden]
+            return ["ipx_add_to_cart","product-form__submit","buyBtn","button","hidden"]
 
     def set_last_class(current_class):
         with open('last_class.txt', 'w') as file:
