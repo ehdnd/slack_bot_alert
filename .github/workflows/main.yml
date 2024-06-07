@@ -24,14 +24,14 @@ jobs:
         pip install requests beautifulsoup4 slack_sdk
 
     - name: Send Slack notification before running the scraper
+      if: ${{ github.event_name == 'workflow_dispatch' }}  # 수동 실행일 때만 실행
       env:
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
       run: |
         curl -X POST -H 'Authorization: Bearer ${{ secrets.SLACK_TOKEN }}' -H 'Content-type: application/json' \
-        --data '{"channel":"${{ secrets.CHANNEL_ID }}", "text":"Scraper가 실행되기 전에 알림을 보냅니다."}' \
+        --data '{"channel":"${{ secrets.CHANNEL_ID }}", "text":"모니터링이 시작되었습니다."}' \
         https://slack.com/api/chat.postMessage
-
 
     - name: Run scraper
       env:
