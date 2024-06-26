@@ -5,6 +5,9 @@ from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def check_button_class(url):
     try:
@@ -54,9 +57,12 @@ def monitor_changes(url):
     last_class = ["ipx_add_to_cart","product-form__submit","buyBtn","button","hidden"]
     current_class = check_button_class(url)
 
-    if current_class != last_class and current_class != None :
-        send_slack_message(client, channel_id, f"클래스 변경: {last_class}")
-        send_slack_message(client, channel_id, url)
+    if current_class != last_class and current_class != None:
+        if "hidden" not in current_class:
+            send_slack_message(client, channel_id, "<!channel> 구매가능 !")
+            send_slack_message(client, channel_id, url)
+        else:
+            send_slack_message(client, channel_id, "문제발생")
 
 url = "https://linefriendssquare.com/products/newjeans-x-murakami-metal-keyring?variant=44376599560391"
 
